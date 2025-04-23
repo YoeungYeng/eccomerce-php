@@ -13,15 +13,23 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('category_name' , 255);
-            $table->string('product_name' , 255);
-            $table->integer('price');
-            $table->integer('quantity');
-            $table->string('description' , 255);
-            $table->string('image' , 255);
+            $table->string('title')->nullable();
+            $table->decimal('price', 10, 2)->nullable();
+            
+            $table->text('description')->nullable();
+            $table->text('short_description')->nullable();
+            $table->string('image')->nullable();
+            // key relationship❤️
+            $table->foreignId("category_id")->constrained()->onDelete('cascade');
+            $table->foreignId("brand_id")->nullable()->constrained()->onDelete('cascade');
+            $table->integer('quantity')->nullable();
+            $table->integer("status")->default(1);
+            $table->enum('is_feature',['yes', 'no'])->default('no');
             $table->timestamps();
         });
     }
+
+    
 
     /**
      * Reverse the migrations.

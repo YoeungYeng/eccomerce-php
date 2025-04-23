@@ -4,11 +4,16 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\products as ModelsProducts;
+use App\Models\TempImage;
 use Dotenv\Exception\ValidationException;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage as Storage;
+use Illuminate\Support\Facades\Validator;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
+
 
 class products extends Controller
 {
@@ -18,7 +23,13 @@ class products extends Controller
     public function index()
     {
         // all products
-        return ModelsProducts::all();
+
+        $product = ModelsProducts::orderBy('created_at', 'desc')->get();
+        return response()->json([
+            'status' => 200, // success
+            'message' => 'All Products',
+            'data' => $product // return all brands
+        ]);
     }
 
     /**
@@ -27,109 +38,147 @@ class products extends Controller
     public function store(Request $request)
     {
         try {
-            // Validate request
-            $data = $request->validate([
-                'category' => 'required|string|max:50',
-                'product_name' => 'required|string|max:50', // ✅ Fixed: product-name -> product_name
-                'price' => 'required|numeric|min:0',
-                'quantity' => 'required|integer|min:1',
-                'description' => 'required|string|max:250',
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048' // Max 2MB
+
+            $validator = Validator::make($request->all(), [
+                'title' => "required",
+                // 'price' => "required|numeric",
+                'category' => 'required|integer',
+                'brands' => 'required|integer',
+                'status' => 'required',
+                'is_feature' => 'required',
+                // 'image' => '|image|mimes:png,jpg,jpeg,gif|max:2048' // 5MB max image size
             ]);
 
-            // Store image in the 'public/images' folder
-            // $image_path = $request->file('image')->store('images', 'public'); // ✅ Fixed path
+            // if validation fails
+            if ($validator->fails()) {
+                return response()->json([
+                    "status" => 400,
+                    'message' => $validator->errors()
+                ], 400);
+            }
 
-            // Handle file upload
+            // store product
+            $product = new ModelsProducts();
+            $product->title = $request->title;
+            $product->price = $request->price;
+            // $product->compare_price = $request->input('compare_price', null);
+            $product->quantity = $request->quantity;
+            $product->description = $request->description;
+            $product->short_description = $request->short_description;
+            $product->category_id = $request->category;
+            $product->brand_id = $request->brands;
+            $product->status = $request->status;
+            $product->is_feature = $request->is_feature;
+
+            // Save image to database
             if ($request->hasFile('image')) {
-                $image_path = $request->file('image')->store('images', 'public'); // Store in storage/app/public/images
+                $image_path = $request->file('image')->store('product/larg', 'public'); // Store in storage/app/public/images
                 $image_url = asset('storage/' . $image_path); // Convert to URL
             } else {
                 $image_url = null;
             }
-            // Create product in the database
-            $product = ModelsProducts::create([
-                'category_name' => $data['category'],
-                'product_name' => $data['product_name'], // ✅ Fixed key
-                'price' => $data['price'],
-                'quantity' => $data['quantity'],
-                'description' => $data['description'],
-                'image' => $image_url, // ✅ Correct image path
-            ]);
 
-            return response()->json($product, 201);
+            $product->image = $image_url; // Save generated image URL
+            $product->save();
 
-        } catch (ValidationException $e) {
+            // response from server after request
             return response()->json([
-                'message' => 'Validation error💔💔',
-                'errors' => $e->getMessage() // ✅ Fixed: Use $e->errors() instead of getMessage()
-            ], 422);
+                'status' => 201,
+                'message' => 'Product has been created ❤️'
+            ], 201);
 
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Something went wrong!💔',
+                'message' => 'Something went wrong! 💔🤣',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
+
+
     /**
      * Display the specified resource.
      */
-    public function show(ModelsProducts $product)
+    public function show($id)
     {
         //​ show display 
-        return $product;
+        $product = ModelsProducts::find($id);
+        // check if product exists
+        if ($product == null) {
+            return response()->json([
+                'status' => 404, // not found
+                'message' => 'Brand Not Found',
+            ], 404);
+        }
+        return response()->json([
+            'status' => 200, // success
+            'message' => 'Brand Found',
+            'data' => $product // return product
+        ], 200);
 
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ModelsProducts $product)
+    public function update(Request $request, $id, ModelsProducts $products)
     {
-        // update product
         try {
-            // ✅ Validate input
-            $data = $request->validate([
-                'category' => 'sometimes|string|max:50',
-                'product_name' => 'sometimes|string|max:50',
-                'price' => 'sometimes|numeric|min:0',
-                'quantity' => 'sometimes|integer|min:1',
-                'description' => 'sometimes|string|max:250',
-                'image' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048' // Optional image upload
+            $product = ModelsProducts::find($id);
+
+            if (!$product) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Product not found',
+                    'data' => [],
+                ], 404);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'title' => 'required|string', // Title is now always required
+                'price' => 'sometimes|numeric',
+                'category' => 'sometimes|integer',
+                'brands' => 'sometimes|integer',
+                'status' => 'required',
+                'is_feature' => 'required',
+                'image' => 'image|mimes:png,jpg,jpeg,gif|max:2048',
+                // ... other fields
             ]);
 
-            // ✅ Assign only if values exist in the request
-            if ($request->has('category')) {
-                $product->category_name = $data['category'];
-            }
-            if ($request->has('product_name')) {
-                $product->product_name = $data['product_name'];
-            }
-            if ($request->has('price')) {
-                $product->price = $data['price'];
-            }
-            if ($request->has('quantity')) {
-                $product->quantity = $data['quantity'];
-            }
-            if ($request->has('description')) {
-                $product->description = $data['description'];
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors(),
+                ], 400);
             }
 
-            // ✅ Handle image upload
+            $product->title = $request->title;
+            $product->price = $request->price;
+            $product->quantity = $request->quantity;
+            $product->description = $request->description;
+            $product->short_description = $request->short_description;
+            $product->category_id = $request->category;
+            $product->brand_id = $request->brands;
+            $product->status = $request->status;
+            $product->is_feature = $request->is_feature;
+
+            // dd($request->all()); // Inspect the request data
             if ($request->hasFile('image')) {
                 if ($product->image) {
                     Storage::delete($product->image);
                 }
-                $product->image = $request->file('image')->store('images', 'public');
+                $image_path = $request->file('image')->store('product/larg', 'public');
+                $image_url = asset('storage/' . $image_path); // Convert to URL
+                $product->image = $image_url;
+
             }
 
-            // ✅ Save only if there are changes
             if ($product->isDirty()) {
                 $product->save();
                 return response()->json([
-                    'message' => 'Product updated successfully 🎉',
+                    'message' => 'Product updated successfully 😊😊',
                     'product' => $product
                 ], 200);
             } else {
@@ -139,48 +188,47 @@ class products extends Controller
                 ], 200);
             }
 
-        } catch (ValidationException $e) {
+        } catch (Exception $e) {
             return response()->json([
-                'message' => 'Validation error ❌',
-                'errors' => $e->getMessage()
-            ], 422);
-        } catch (\Exception $e) {
+                'status' => 500,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        try {
+            // Find product by ID
+            $product = ModelsProducts::findOrFail($id);
+
+            // Delete the associated image if it exists
+            if ($product->image && Storage::exists($product->image)) {
+                Storage::delete($product->image);
+            }
+
+            // Delete product from database
+            $product->delete();
+
+            return response()->json([
+                'message' => 'Product deleted successfully 🚀❤️'
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Product not found 💔💔',
+            ], 404);
+        } catch (Exception $e) {
             return response()->json([
                 'message' => 'Something went wrong! 💔',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-{
-    try {
-        // Find product by ID
-        $product = ModelsProducts::findOrFail($id);
-
-        // Delete the associated image if it exists
-        if ($product->image && Storage::exists($product->image)) {
-            Storage::delete($product->image);
-        }
-
-        // Delete product from database
-        $product->delete();
-
-        return response()->json([
-            'message' => 'Product deleted successfully 🚀❤️'
-        ], 200);
-    } catch (ModelNotFoundException $e) {
-        return response()->json([
-            'message' => 'Product not found 💔💔',
-        ], 404);
-    } catch (Exception $e) {
-        return response()->json([
-            'message' => 'Something went wrong! 💔',
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
 }

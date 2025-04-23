@@ -8,16 +8,29 @@ class products extends Model
 {
     //
     protected $fillable = [
-        'category_name',
-        'product_name',
-        'price',
+        'title',
+        'price', 
         'quantity',
         'description',
+        'short_description',
+        'category_id',
+        'brand_id',
+        'status',
+        'is_feature',
         'image'
     ];
 
+    // Accessors to append to model's array and JSON form
+    protected $appends = ['image_url'];
+
+    /**
+     * Accessor for the full image URL
+     *
+     * @return string|null
+     */
     public function getImageUrlAttribute()
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        return $this->image ? asset("storage/{$this->image}") : null;
     }
+
 }

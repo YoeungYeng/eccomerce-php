@@ -4,8 +4,11 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -14,7 +17,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
 
-        try {
+try {
             // Validate the request
             $data = $request->validate([
                 'name' => 'required|string|max:255',
@@ -53,28 +56,39 @@ class AuthController extends Controller
     {
         try {
             // Validate the request
-            $data = $request->validate([
+            $data = Validator::make($request->all(),[
                 'email' => 'required|email',
                 'password' => 'required|string'
             ]);
 
-            // Find the user by email
-            $user = User::where('email', $data['email'])->first();
-
-            // Check if user exists and password is correct
-            if (!$user || !Hash::check($data['password'], $user->password)) {
-                return response()->json(['error' => 'Invalid credentials!'], 401);
+            if($data->fails()){
+                return response()->json([
+                    'status' => 400,
+                    'error' => $data->errors()
+                ], 400);
             }
+            // Find the user by email
+            if(Auth::attempt(['email' =>$request->email, 'password'=>$request->password])){
+                $user = User::find(Auth::user()->id);
+                // check if admin
+                if($user->role == 'admin'){
+                    $token = $user->createToken('token')->plainTextToken;
 
-            // Create a new token
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            // Return successful response
-            return response()->json([
-                'user' => $user,
-                'access_token' => $token,
-                'token_type' => 'Bearer'
-            ], 200);
+                    return response()->json([
+                        'stauts' => '200',   
+                        'token' => $token,
+                        'id' => $user->id,
+                        'name' => $user->name                
+                    ], 200);
+                }
+            }else{
+                return response()->json([
+                    'status' => 401,
+                    'message' => "You are not authorized to access admin panel"
+                ], 401);
+            }
+            
+            
 
         } catch (ValidationException $e) {
             // ✅ Fixed syntax error in status code
