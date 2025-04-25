@@ -17,7 +17,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
 
-try {
+        try {
             // Validate the request
             $data = $request->validate([
                 'name' => 'required|string|max:255',
@@ -25,7 +25,7 @@ try {
                 'password' => 'required|string|min:6'
             ]);
 
-            // Create a new user
+            // Create a new user to database
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
@@ -56,39 +56,39 @@ try {
     {
         try {
             // Validate the request
-            $data = Validator::make($request->all(),[
+            $data = Validator::make($request->all(), [
                 'email' => 'required|email',
                 'password' => 'required|string'
             ]);
 
-            if($data->fails()){
+            if ($data->fails()) {
                 return response()->json([
                     'status' => 400,
                     'error' => $data->errors()
                 ], 400);
             }
             // Find the user by email
-            if(Auth::attempt(['email' =>$request->email, 'password'=>$request->password])){
+            if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
                 $user = User::find(Auth::user()->id);
                 // check if admin
-                if($user->role == 'admin'){
+                if ($user->role == 'admin') {
                     $token = $user->createToken('token')->plainTextToken;
 
                     return response()->json([
-                        'stauts' => '200',   
+                        'stauts' => '200',
                         'token' => $token,
                         'id' => $user->id,
-                        'name' => $user->name                
+                        'name' => $user->name
                     ], 200);
                 }
-            }else{
+            } else {
                 return response()->json([
                     'status' => 401,
                     'message' => "You are not authorized to access admin panel"
                 ], 401);
             }
-            
-            
+
+
 
         } catch (ValidationException $e) {
             // ✅ Fixed syntax error in status code

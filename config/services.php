@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    // ✅ Add PayPal configuration here
+    'paypal' => [
+        'mode'    => env('PAYPAL_MODE', 'sandbox'),
+        'sandbox' => [
+            'client_id'     => env('PAYPAL_SANDBOX_CLIENT_ID'),
+            'client_secret' => env('PAYPAL_SANDBOX_CLIENT_SECRET'),
+            'app_id'        => env('PAYPAL_SANDBOX_APP_ID'),
+        ],
+        'live' => [
+            'client_id'     => env('PAYPAL_LIVE_CLIENT_ID'),
+            'client_secret' => env('PAYPAL_LIVE_CLIENT_SECRET'),
+            'app_id'        => env('PAYPAL_LIVE_APP_ID'),
+        ],
+        'currency' => env('PAYPAL_CURRENCY', 'USD'),
+    ],
+
 ];
