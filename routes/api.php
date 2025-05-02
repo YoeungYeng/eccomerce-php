@@ -9,6 +9,7 @@ use App\Http\Controllers\front\AccountController;
 use App\Http\Controllers\front\OrderController;
 use App\Http\Controllers\front\ProductController;
 use App\Http\Controllers\front\UserController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -33,10 +34,15 @@ Route::post('/account/register', [AuthController::class, 'register']);
 Route::post('/account/login', [AccountController::class, 'login']);
 Route::middleware(['auth:sanctum', 'checkRoleUser'])->group(function () {
     Route::post('/saveorder', [OrderController::class, 'SaveOrder']);
-    Route::get('/getOrderDetail/{id}', [AccountController::class , 'getOrderDetails']);
+    Route::get('/getOrderDetail/{id}', [AccountController::class, 'getOrderDetails']);
     // user 
     Route::get('/user', [UserController::class, 'index']);
+     // 💳 PayPal Payment Routes
+     Route::post('/paypal/capture/{orderId}', [PaymentController::class, 'captureOrder']);
 });
+
+Route::post('/paypal', [PaymentController::class, 'paypal']);
+
 // middleware('auth:sanctum')->
 Route::middleware(['auth:sanctum', 'checkRoleAdmin'])->group(function () {
     Route::apiResource('/products', products::class);

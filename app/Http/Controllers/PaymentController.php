@@ -2,48 +2,57 @@
 
 namespace App\Http\Controllers;
 
-
-use Srmklive\PayPal\Services\PayPal as PayPalClient;
+use App\Models\Payments;
+use App\Services\PayPalService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use JsonException;
+use Srmklive\PayPal\Services\PayPal as PayPalClient;
+
 class PaymentController extends Controller
 {
-    //
-    protected $payPalService;
+    protected $paypal;
 
-    public function createTransaction(Request $request)
+    public function __construct(PayPalClient $paypal)
     {
-        $provider = new PayPalClient;
-        $provider->setApiCredentials(config('paypal'));
-        $paypalToken = $provider->getAccessToken();
-        $provider->setAccessToken($paypalToken);
+        $this->paypal = $paypal;
+    }
+    
+    public function paypal(Request $request)
+    {
+        $this->paypal->setApiCredentials(config('paypal'));
+        $this->paypal->setAccessToken($this->paypal->getAccessToken());
 
-        $response = $provider->createOrder([
-            "intent" => "CAPTURE",
-            "purchase_units" => [
+        $amount = $request->input('amount', 100); // default 100
+        $currency = $request->input('currency_code', 'USD'); // default USD
+
+        $response = $this->paypal->createOrder([
+            'intent' => 'CAPTURE',
+            'purchase_units' => [
                 [
-                    "amount" => [
-                        "currency_code" => "USD",
-                        "value" => "10.00"
-                    ]
-                ]
+                    'amount' => [
+                        'currency_code' => $currency,
+                        'value' => $amount,
+                    ],
+                ],
             ],
-            "application_context" => [
-                "return_url" => route('paypal.success'),
-                "cancel_url" => route('paypal.cancel'),
-            ]
         ]);
 
-        return response()->json($response);
+        // save to database
+        $payment = Payments::create([
+            'order_id' => $response['id'] ?? null,
+            'status' => $response['status'] ?? 'CREATED',
+            'amount' => $amount,
+            'currency' => $currency,
+            'payment_method' => 'paypal',
+            'description' => $request->input('description', 'PayPal payment'),
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $response,
+            'payment_id' => $payment->id,
+        ]);
     }
 
-    public function captureTransaction(Request $request)
-    {
-        $provider = new PayPalClient;
-        $provider->setApiCredentials(config('paypal'));
-        $provider->setAccessToken($provider->getAccessToken());
-
-        $response = $provider->capturePaymentOrder($request->input('token'));
-
-        return response()->json($response);
-    }
 }
