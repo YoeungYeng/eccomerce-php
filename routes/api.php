@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\BrandsController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\products;
+use App\Http\Controllers\API\SlideController;
 use App\Http\Controllers\API\TempImageController;
 use App\Http\Controllers\front\AccountController;
 use App\Http\Controllers\front\FavoriteController;
@@ -38,6 +39,13 @@ Route::get('/getBrands', [ProductController::class, 'getBrands']);
 /* 
     login & register a user
 */
+/* 
+    Slide show routes
+*/
+Route::get('/slides', [SlideController::class, 'index']);
+Route::post('/slides', [SlideController::class, 'store']);
+Route::get('/slides/{id}', [SlideController::class, 'show']);
+// -----------------------------------------------------------
 Route::post('/account/register', [AuthController::class, 'register']);
 /* 
     login & login a user
