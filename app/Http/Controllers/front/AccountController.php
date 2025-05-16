@@ -4,6 +4,7 @@ namespace App\Http\Controllers\front;
 
 use App\Http\Controllers\Controller;
 use App\Models\orders;
+use App\Models\Slide;
 use App\Models\User;
 use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
@@ -132,6 +133,24 @@ class AccountController extends Controller
             return response()->json([
                 "status" => 400,
                 "message" => "Your cart is empty",
+                "data" => null,
+            ], 400);
+        }
+    }
+    // get all slides
+    public function getSlides()
+    {
+        $slides = Slide::all();
+        if ($slides) {
+            return response()->json([
+                "status" => 200,
+                "message" => "All slides",
+                "data" => $slides,
+            ], 200);
+        } else {
+            return response()->json([
+                "status" => 400,
+                "message" => "No slides found",
                 "data" => null,
             ], 400);
         }

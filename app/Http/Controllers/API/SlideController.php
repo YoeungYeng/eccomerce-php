@@ -18,10 +18,10 @@ class SlideController extends Controller
         try {
             $slide = Slide::all();
             return response()->json([
-                'status' => true,
+                'status' => 200,
                 'message' => 'List of slides',
                 'data' => $slide
-            ]);
+            ],200);
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
@@ -37,15 +37,13 @@ class SlideController extends Controller
             // Validate the request
             $validation = Validator::make($request->all(), [
                 'title' => 'required|string|max:255',
-                'subTitle' => 'required|string|max:255',
+                'subtitle' => 'required|string|max:255',
                 'image' => [
                     'required',
-                    File::image()
-                        ->min(1024) // 1MB
-                        ->max(12 * 1024), // 12MB
-                    Rule::dimensions()
-                        ->maxWidth(2000)
-                        ->maxHeight(2000),
+                    'image',
+                    File::types(['jpeg', 'png', 'jpg', 'gif', 'webp'])
+                        ->min(100) // Minimum file size in kilobytes (500KB)
+                        ->max(12 * 1024), // Maximum file size in kilobytes (12MB)
                 ],
             ]);
             // check if validation fails
@@ -68,7 +66,7 @@ class SlideController extends Controller
             // Create a new slide
             $slide = Slide::create([
                 'title' => $request->title,
-                'subTitle' => $request->subTitle,
+                'subtitle' => $request->subTitle,
                 'image' => $image_url,
             ]);
             // Return a success response

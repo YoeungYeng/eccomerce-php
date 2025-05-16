@@ -39,12 +39,7 @@ Route::get('/getBrands', [ProductController::class, 'getBrands']);
 /* 
     login & register a user
 */
-/* 
-    Slide show routes
-*/
-Route::get('/slides', [SlideController::class, 'index']);
-Route::post('/slides', [SlideController::class, 'store']);
-Route::get('/slides/{id}', [SlideController::class, 'show']);
+
 // -----------------------------------------------------------
 Route::post('/account/register', [AuthController::class, 'register']);
 /* 
@@ -86,10 +81,18 @@ Route::middleware(['auth:sanctum', 'checkRoleAdmin'])->group(function () {
     Route::get('/order/{id}', [\App\Http\Controllers\API\OrderController::class, 'show']);
     // update order status
     Route::post('/order/{id}', [\App\Http\Controllers\API\OrderController::class, 'updateOrder']);
+    /* 
+    Slide show routes
+*/
+    Route::get('/slides', [SlideController::class, 'index']);
+    Route::post('/slides', [SlideController::class, 'store']);
+    Route::get('/slides/{id}', [SlideController::class, 'show']);
 });
 
 // Route::apiResource('/category', CategoryController::class);
 // Route::get('category', CategoryController::class)->name('index');
 
-// favorite controller
+// slide show routes
+Route::get('account/getslides', [AccountController::class, 'getSlides']);
+
 
