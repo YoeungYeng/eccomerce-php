@@ -6,6 +6,7 @@ use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\products;
 use App\Http\Controllers\API\TempImageController;
 use App\Http\Controllers\front\AccountController;
+use App\Http\Controllers\front\FavoriteController;
 use App\Http\Controllers\front\OrderController;
 use App\Http\Controllers\front\ProductController;
 use App\Http\Controllers\front\UserController;
@@ -14,35 +15,55 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-// Route::post('/login', 'App\Http\Controllers\AuthController@login');
-// Route::post('/register', [AuthController::class, 'register'])->name('register.api');
-Route::post('/login', [AuthController::class, 'login'])->name('login.api');
+/* 
+    Auth Admin
+*/
+Route::post('/login', [AuthController::class, 'login']);
 // get all products
 Route::get('/getAllProduct', [ProductController::class, 'getAllProduct']);
 // last feature products
 Route::get('/getLastProduct', [ProductController::class, 'lastProducts']);
-// feature products
+/* 
+    feature products
+*/
 Route::get('/getFeatureProduct', [ProductController::class, 'featureProducts']);
-// get product detail
+/* 
+    get product detail
+*/
 Route::get('/getProductDetail/{id}', [ProductController::class, 'getProductDetail']);
 // get all categories
 Route::get('/getCategory', [ProductController::class, 'getCategory']);
 // get all brands
 Route::get('/getBrands', [ProductController::class, 'getBrands']);
-// login & register a user
+/* 
+    login & register a user
+*/
 Route::post('/account/register', [AuthController::class, 'register']);
+/* 
+    login & login a user
+*/
 Route::post('/account/login', [AccountController::class, 'login']);
+/* 
+    login & update profile a user
+*/
+
 Route::middleware(['auth:sanctum', 'checkRoleUser'])->group(function () {
     Route::post('/saveorder', [OrderController::class, 'SaveOrder']);
+    Route::get('/getOrder', [AccountController::class, 'getOrders']);
     Route::get('/getOrderDetail/{id}', [AccountController::class, 'getOrderDetails']);
-    // user 
-    Route::get('/user', [UserController::class, 'index']);
-     // 💳 PayPal Payment Routes
-     Route::post('/paypal/capture/{orderId}', [PaymentController::class, 'captureOrder']);
+    //  Payment Routes
+    Route::post('/payments', [PaymentController::class, 'created'])->name('payments.create');
+    Route::post('/favorites/{productId}', [FavoriteController::class, 'addToFavorites']);
+    Route::delete('/favorites/{productId}', [FavoriteController::class, 'removeFromFavorites']);
+    Route::get('/favorites/{productId}', [FavoriteController::class, 'isFavorite']);
+    Route::get('/account/user', [AccountController::class, 'user']);
+    Route::post('/account/updateprofile', [AccountController::class, 'updateProfile']);
+    Route::get('/getAllfavorites', [FavoriteController::class, 'getFavorites']);
+    // reset password
+    Route::post('/account/resetpassword', [AccountController::class, 'resetPassword']);
 });
 
-Route::post('/paypal', [PaymentController::class, 'paypal']);
-
+Route::get('/user', [UserController::class, 'index']);
 // middleware('auth:sanctum')->
 Route::middleware(['auth:sanctum', 'checkRoleAdmin'])->group(function () {
     Route::apiResource('/products', products::class);
@@ -61,3 +82,6 @@ Route::middleware(['auth:sanctum', 'checkRoleAdmin'])->group(function () {
 
 // Route::apiResource('/category', CategoryController::class);
 // Route::get('category', CategoryController::class)->name('index');
+
+// favorite controller
+
