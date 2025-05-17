@@ -22,7 +22,7 @@ class SlideController extends Controller
                 'status' => 200,
                 'message' => 'List of slides',
                 'data' => $slide
-            ],200);
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
@@ -42,9 +42,8 @@ class SlideController extends Controller
                 'image' => [
                     'required',
                     'image',
-                    File::types(['jpeg', 'png', 'jpg', 'gif', 'webp'])
-                        ->min(100) // Minimum file size in kilobytes (500KB)
-                        ->max(12 * 1024), // Maximum file size in kilobytes (12MB)
+                    // 100 KB
+                    'max:12288',    // 12 MB
                 ],
             ]);
             // check if validation fails
@@ -94,16 +93,16 @@ class SlideController extends Controller
             // check if slide dont exist
             if ($slide == null) {
                 return response()->json([
-                    'status' => false,
+                    'status' => 404,
                     'message' => 'Slide not found'
                 ], 404);
             }
             // Return a success response
             return response()->json([
-                'status' => true,
+                'status' => 200,
                 'message' => 'Slide details',
                 'data' => $slide
-            ]);
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
@@ -114,12 +113,12 @@ class SlideController extends Controller
     }
 
     // update
-    public function update(Request $request, $id, Slide $slide)
+    public function update(Request $request, $id)
     {
         try {
-            $product = Slide::find($id);
+            $slide = Slide::find($id);
 
-            if (!$product) {
+            if (!$slide) {
                 return response()->json([
                     'status' => 404,
                     'message' => 'Product not found',
@@ -131,13 +130,7 @@ class SlideController extends Controller
             $validator = Validator::make($request->all(), [
                 'title' => 'required|string|max:255',
                 'subtitle' => 'required|string|max:255',
-                'image' => [
-                    'required',
-                    'image',
-                    File::types(['jpeg', 'png', 'jpg', 'gif', 'webp'])
-                        ->min(100) // Minimum file size in kilobytes (500KB)
-                        ->max(12 * 1024), // Maximum file size in kilobytes (12MB)
-                ],
+                'image' => 'nullable|image|max:12288',
             ]);
 
             if ($validator->fails()) {
@@ -148,31 +141,31 @@ class SlideController extends Controller
                 ], 400);
             }
 
-            $product->title = $request->title;
-            $product->subtitle = $request->subtitle;
-            
+            $slide->title = $request->title;
+            $slide->subtitle = $request->subtitle;
+
 
             // dd($request->all()); // Inspect the request data
             if ($request->hasFile('image')) {
-                if ($product->image) {
-                    Storage::delete($product->image);
+                if ($slide->image) {
+                    Storage::delete($slide->image);
                 }
                 $image_path = $request->file('image')->store('slide', 'public');
                 $image_url = asset('storage/' . $image_path); // Convert to URL
-                $product->image = $image_url;
+                $slide->image = $image_url;
 
             }
 
-            if ($product->isDirty()) {
-                $product->save();
+            if ($slide->isDirty()) {
+                $slide->save();
                 return response()->json([
                     'message' => 'Product updated successfully 😊😊',
-                    'product' => $product
+                    'slide' => $slide
                 ], 200);
             } else {
                 return response()->json([
                     'message' => 'No changes detected ⚠️',
-                    'product' => $product
+                    'slide' => $slide
                 ], 200);
             }
 
