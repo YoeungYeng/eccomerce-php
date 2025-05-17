@@ -87,6 +87,8 @@ Route::middleware(['auth:sanctum', 'checkRoleAdmin'])->group(function () {
     Route::get('/slides', [SlideController::class, 'index']);
     Route::post('/slides', [SlideController::class, 'store']);
     Route::get('/slides/{id}', [SlideController::class, 'show']);
+    // destroy
+    Route::delete('/slides/{id}', [SlideController::class, 'destroy']);
 });
 
 // Route::apiResource('/category', CategoryController::class);
