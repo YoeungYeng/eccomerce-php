@@ -38,10 +38,10 @@ class AccountController extends Controller
         $user->save();
 
         return response()->json([
-            'status' => 200,
+            'status' => 201,
             'message' => 'User registered successfully',
             'data' => $user
-        ], 400);
+        ], 201);
     }
 
     // Login a user
@@ -68,10 +68,13 @@ class AccountController extends Controller
                     $token = $user->createToken('token')->plainTextToken;
 
                     return response()->json([
-                        'stauts' => '200',
+                        'status' => 200,
                         'token' => $token,
                         'id' => $user->id,
-                        'name' => $user->name
+                        'email' => $user->email,
+                        'password' => $user->password,
+                        // 'user' => $user,
+
                     ], 200);
                 } else {
                     return response()->json([
@@ -83,7 +86,7 @@ class AccountController extends Controller
                 return response()->json([
                     'status' => 401,
                     'message' => "Either email/password in incorrenct"
-                ], 401);
+                ], 401);    
             }
         } catch (ValidationException $e) {
             // ✅ Fixed syntax error in status code

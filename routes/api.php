@@ -50,7 +50,7 @@ Route::post('/account/login', [AccountController::class, 'login']);
     login & update profile a user
 */
 
-Route::middleware(['auth:sanctum', 'checkRoleUser'])->group(function () {
+Route::middleware(['jwt.auth', 'checkRoleUser'])->group(function () {
     Route::post('/saveorder', [OrderController::class, 'SaveOrder']);
     Route::get('/getOrder', [AccountController::class, 'getOrders']);
     Route::get('/getOrderDetail/{id}', [AccountController::class, 'getOrderDetails']);
@@ -68,7 +68,7 @@ Route::middleware(['auth:sanctum', 'checkRoleUser'])->group(function () {
 
 Route::get('/user', [UserController::class, 'index']);
 // middleware('auth:sanctum')->
-Route::middleware(['auth:sanctum', 'checkRoleAdmin'])->group(function () {
+Route::middleware(['jwt.auth', 'checkRoleAdmin'])->group(function () {
     Route::apiResource('/products', products::class);
     // category
     Route::apiResource('/categories', CategoryController::class);
