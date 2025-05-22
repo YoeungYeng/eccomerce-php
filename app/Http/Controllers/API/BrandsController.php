@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\Brands;
+use App\Models\Brand;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -15,7 +15,7 @@ class BrandsController extends Controller
     // get all brands
     public function index()
     {
-        $brands = Brands::orderBy('created_at', 'desc')->get();
+        $brands = Brand::orderBy('created_at', 'desc')->get();
         return response()->json([
             'status' => 200, // success
             'message' => 'All Brands',
@@ -34,10 +34,10 @@ class BrandsController extends Controller
             ]);
 
             // create brand to database
-            $brand = Brands::create([
-                'name' => $data['name'],
-                'status' => 1
-            ]);
+            $brand = new Brand();
+            $brand->name = $data['name'];
+            $brand->status = $data['status'];
+            $brand->save();
             return response()->json([
                 'status' => 201, // created success
                 'message' => 'Brand Created',
@@ -61,7 +61,7 @@ class BrandsController extends Controller
     // show brand by id or single brand❤️
     public function show($id)
     {
-        $brand = Brands::find($id);
+        $brand = Brand::find($id);
         // check if brand exists
         if ($brand == null) {
             return response()->json([
@@ -88,7 +88,7 @@ class BrandsController extends Controller
         ]);
 
         // find brand by id
-        $brand = Brands::find($id);
+        $brand = Brand::find($id);
         // check if brand exists
         if ($brand == null) {
             return response()->json([
@@ -133,7 +133,7 @@ class BrandsController extends Controller
     public function destroy($id)
     {
         // find brand by id
-        $brand = Brands::find($id);
+        $brand = Brand::find($id);
         // check if brand exists
         if ($brand == null) {
             return response()->json([

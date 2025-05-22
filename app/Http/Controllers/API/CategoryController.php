@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\Categories;
+use App\Models\Category;
 
 use Exception;
 use Illuminate\Auth\Events\Validated;
@@ -16,10 +16,10 @@ class CategoryController extends Controller
     // get all categories
     public function index()
     {
-        $categories = Categories::orderBy('created_at', 'desc')->get();
+        $categories = Category::orderBy('created_at', 'desc')->get();
         return response()->json([
             'status' => 200, // success
-            'message' => 'All Categories',
+            'message' => 'All Category',
             'data' => $categories // return all categories
         ]);
     }
@@ -34,7 +34,7 @@ class CategoryController extends Controller
             ]);
 
             // create category
-            $category = Categories::create([
+            $category = Category::create([
                 'name' => $data['name'],
                 'status' => 1
             ]);
@@ -61,7 +61,7 @@ class CategoryController extends Controller
     // get single category
     public function show($id)
     {
-        $category = Categories::find($id);
+        $category = Category::find($id);
         if (!$category) {
             return response()->json([
                 'status' => 404, // not found
@@ -80,7 +80,7 @@ class CategoryController extends Controller
     {
         try {
             // Get category
-            $category = Categories::find($id);
+            $category = Category::find($id);
 
             if ($category === null) {
                 return response()->json([
@@ -134,7 +134,7 @@ class CategoryController extends Controller
     // delete category
     public function destroy($id)
     {
-        $category = Categories::find($id);
+        $category = Category::find($id);
         if (!$category) {
             return response()->json([
                 'status' => 404, // not found

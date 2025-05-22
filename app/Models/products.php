@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class products extends Model
 {
     //
+   
+
     protected $fillable = [
         'title',
-        'price', 
+        'price',
         'quantity',
         'description',
         'short_description',
@@ -36,6 +38,11 @@ class products extends Model
     public function favoiteByUser()
     {
         return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
+    }
+
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class, 'brand_id');
     }
 
 }

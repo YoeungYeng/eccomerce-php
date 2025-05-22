@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\front;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use App\Models\Brands;
 use App\Models\Categories;
+use App\Models\Category;
 use App\Models\products;
 use Illuminate\Http\Request;
 
@@ -67,7 +69,7 @@ class ProductController extends Controller
     // get category 
     public function getCategory()
     {
-        $category = Categories::orderBy('name', 'asc')
+        $category = Category::orderBy('name', 'asc')
         ->where('status', 1)
         ->get();
         // dd($product);
@@ -81,7 +83,7 @@ class ProductController extends Controller
     // get brands
     public function getBrands()
     {
-        $brands = Brands::orderBy('name', 'asc')
+        $brands = Brand::orderBy('name', 'asc')
         ->where('status', 1)
         ->get();
         // dd($product);

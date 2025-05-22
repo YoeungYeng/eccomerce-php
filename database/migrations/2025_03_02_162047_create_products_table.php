@@ -20,8 +20,8 @@ return new class extends Migration
             $table->text('short_description')->nullable();
             $table->string('image')->nullable();
             // key relationship❤️
-            $table->foreignId("category_id")->constrained()->onDelete('cascade');
-            $table->foreignId("brand_id")->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('category_id')->constrained('category')->onDelete('cascade');
+            $table->foreignId('brand_id')->constrained('brand')->onDelete('cascade');
             $table->integer('quantity')->nullable();
             $table->integer("status")->default(1);
             $table->enum('is_feature',['yes', 'no'])->default('no');

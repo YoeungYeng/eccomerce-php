@@ -58,17 +58,35 @@ class products extends Controller
             }
 
             // store product
-            $product = new ModelsProducts();
-            $product->title = $request->title;
-            $product->price = $request->price;
-            // $product->compare_price = $request->input('compare_price', null);
-            $product->quantity = $request->quantity;
-            $product->description = $request->description;
-            $product->short_description = $request->short_description;
-            $product->category_id = $request->category;
-            $product->brand_id = $request->brands;
-            $product->status = $request->status;
-            $product->is_feature = $request->is_feature;
+            $product = ModelsProducts::create([
+                'title' => $request->title,
+                'price' => $request->price,
+                'quantity' => $request->quantity,
+                'description' => $request->description,
+                'short_description' => $request->short_description,
+                'category_id' => $request->category,
+                'brand_id' => $request->brands,
+                'status' => $request->status,
+                'is_feature' => $request->is_feature
+            ]);
+            // check if product created
+            if (!$product) {
+                return response()->json([
+                    'status' => 500,
+                    'message' => 'Product not created',
+                ], 500);
+            }
+            // check if image is uploaded
+            if ($request->hasFile('image')) {
+                // check if image is valid
+                $image = $request->file('image');
+                if (!$image->isValid()) {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Invalid image file',
+                    ], 400);
+                }
+            }
 
             // Save image to database
             if ($request->hasFile('image')) {
@@ -160,7 +178,7 @@ class products extends Controller
             $product->description = $request->description;
             $product->short_description = $request->short_description;
             $product->category_id = $request->category;
-            $product->brand_id = $request->brands;
+            $product->brand_id = $request->brand;
             $product->status = $request->status;
             $product->is_feature = $request->is_feature;
 

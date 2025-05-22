@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('brands', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->integer('status')->default(1);
+        Schema::create('category', function (Blueprint $table) {
+             $table->id()->autoIncrement();
+            $table->string("name");
+            $table->integer("status")->default(1); // Default as a string
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('brands');
+        Schema::dropIfExists('category');
     }
 };

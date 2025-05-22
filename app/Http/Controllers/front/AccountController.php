@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AccountController extends Controller
 {
@@ -60,12 +61,33 @@ class AccountController extends Controller
                     'error' => $data->errors()
                 ], 400);
             }
+            // Try to generate token
+            if (!$token = JWTAuth::attempt($request->only('email', 'password'))) {
+                return response()->json([
+                    'status' => 401,
+                    'message' => 'Invalid credentials'
+                ], 401);
+            }
+
+            // Get authenticated user
+            $user = JWTAuth::user();
+
+            // Check if user is admin
+            if ($user->role !== 'customer') {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'Access denied. Admins only.'
+                ], 403);
+            }
             // Find the user by email
-            if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            if (JWTAuth::attempt(['email' => $request->email, 'password' => $request->password])) {
                 $user = User::find(Auth::user()->id);
                 // check if admin
                 if ($user->role == 'customer') {
-                    $token = $user->createToken('token')->plainTextToken;
+                    // Generate a new token
+                    $token = JWTAuth::fromUser($user);
+                    // Return the token and user information
+                    
 
                     return response()->json([
                         'status' => 200,
@@ -86,7 +108,7 @@ class AccountController extends Controller
                 return response()->json([
                     'status' => 401,
                     'message' => "Either email/password in incorrenct"
-                ], 401);    
+                ], 401);
             }
         } catch (ValidationException $e) {
             // ✅ Fixed syntax error in status code
@@ -223,7 +245,7 @@ class AccountController extends Controller
                 'mobile' => 'required|string|max:15',
                 'address' => 'required|string|max:255',
                 'city' => 'required|string|max:100',
-                
+
             ]);
 
             if ($validator->fails()) {
