@@ -10,10 +10,13 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('brand', function (Blueprint $table) {
-            $table->id()->autoIncrement();
-            $table->string("name");
-            $table->integer("status")->default(1); // Default as a string
+        Schema::create('settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('title')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('address')->nullable();
+            $table->string('link')->nullable();
+            $table->string('logo')->nullable();
             $table->timestamps();
         });
     }
@@ -23,6 +26,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('brand');
+        Schema::dropIfExists('settings');
     }
 };

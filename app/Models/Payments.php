@@ -14,6 +14,7 @@ class Payments extends Model
         'status',
         'transaction_id',
     ];
+    
 
     public function order(){
         return $this->belongsTo(orders::class, 'order_id', 'id');

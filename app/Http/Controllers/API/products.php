@@ -102,7 +102,8 @@ class products extends Controller
             // response from server after request
             return response()->json([
                 'status' => 201,
-                'message' => 'Product has been created ❤️'
+                'message' => 'Product has been created ❤️',
+                'data' => $product
             ], 201);
 
         } catch (Exception $e) {
@@ -140,7 +141,7 @@ class products extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id, ModelsProducts $products)
+    public function update(Request $request, $id)
     {
         try {
             $product = ModelsProducts::find($id);
@@ -155,9 +156,9 @@ class products extends Controller
 
             $validator = Validator::make($request->all(), [
                 'title' => 'required|string', // Title is now always required
-                'price' => 'sometimes|numeric',
-                'category' => 'sometimes|integer',
-                'brands' => 'sometimes|integer',
+                'price' => 'required|numeric',
+                'category' => 'required|integer',
+                'brands' => 'required|integer|exists:brand,id',
                 'status' => 'required',
                 'is_feature' => 'required',
                 'image' => 'image|mimes:png,jpg,jpeg,gif|max:2048',
@@ -172,15 +173,16 @@ class products extends Controller
                 ], 400);
             }
 
-            $product->title = $request->title;
-            $product->price = $request->price;
-            $product->quantity = $request->quantity;
-            $product->description = $request->description;
-            $product->short_description = $request->short_description;
-            $product->category_id = $request->category;
-            $product->brand_id = $request->brand;
-            $product->status = $request->status;
-            $product->is_feature = $request->is_feature;
+            // Update product fields
+            $product->title = $request->input('title', $product->title);
+            $product->price = $request->input('price', $product->price);
+            $product->quantity = $request->input('quantity', $product->quantity);
+            $product->description = $request->input('description', $product->description);
+            $product->short_description = $request->input('short_description', $product->short_description);
+            $product->category_id = $request->input('category', $product->category_id);
+            $product->brand_id = $request->input('brands', $product->brand_id);
+            $product->status = $request->input('status', $product->status);
+            $product->is_feature = $request->input('is_feature', $product->is_feature);
 
             // dd($request->all()); // Inspect the request data
             if ($request->hasFile('image')) {
@@ -196,12 +198,12 @@ class products extends Controller
             if ($product->isDirty()) {
                 $product->save();
                 return response()->json([
-                    'message' => 'Product updated successfully 😊😊',
+                    'message' => 'Product updated successfully',
                     'product' => $product
                 ], 200);
             } else {
                 return response()->json([
-                    'message' => 'No changes detected ⚠️',
+                    'message' => 'No changes detected',
                     'product' => $product
                 ], 200);
             }

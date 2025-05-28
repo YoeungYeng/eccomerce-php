@@ -22,6 +22,7 @@ class products extends Model
         'image'
     ];
 
+
     // Accessors to append to model's array and JSON form
     protected $appends = ['image_url'];
 
@@ -40,9 +41,17 @@ class products extends Model
         return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
     }
 
-    public function brand()
+    public function category()
     {
-        return $this->belongsTo(Brand::class, 'brand_id');
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
+    /**
+     * The brand this product belongs to
+     */
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class, 'brand_id' );
+    }
+    
 }

@@ -3,11 +3,14 @@
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\BrandsController;
 use App\Http\Controllers\API\CategoryController;
+use App\Http\Controllers\API\FooterController;
 use App\Http\Controllers\API\products;
+use App\Http\Controllers\API\SettingContoller;
 use App\Http\Controllers\API\SlideController;
 use App\Http\Controllers\API\TempImageController;
 use App\Http\Controllers\front\AccountController;
 use App\Http\Controllers\front\FavoriteController;
+use App\Http\Controllers\front\FooterController as FrontFooterController;
 use App\Http\Controllers\front\OrderController;
 use App\Http\Controllers\front\ProductController;
 use App\Http\Controllers\front\UserController;
@@ -81,16 +84,14 @@ Route::middleware(['jwt.auth', 'checkRoleAdmin'])->group(function () {
     Route::get('/order/{id}', [\App\Http\Controllers\API\OrderController::class, 'show']);
     // update order status
     Route::post('/order/{id}', [\App\Http\Controllers\API\OrderController::class, 'updateOrder']);
-    /* 
-    Slide show routes
-*/
-    // Route::get('/slides', [SlideController::class, 'index']);
-    // Route::post('/slides', [SlideController::class, 'store']);
-    // Route::get('/slides/{id}', [SlideController::class, 'show']);
-    // update
+
     Route::apiResource('/slides', SlideController::class);
-    // destroy
-    // Route::delete('/slides/{id}', [SlideController::class, 'destroy']);
+
+    // route settings
+    Route::get('/settings', [SettingContoller::class, 'index']);
+    Route::post('/settings', [SettingContoller::class, 'store']);
+    // footer
+    Route::apiResource('/footer', FooterController::class);
 });
 
 // Route::apiResource('/category', CategoryController::class);
@@ -98,5 +99,7 @@ Route::middleware(['jwt.auth', 'checkRoleAdmin'])->group(function () {
 
 // slide show routes
 Route::get('account/getslides', [AccountController::class, 'getSlides']);
+// get all footer
+Route::get('/getfooter', [FrontFooterController::class, 'getAllFooter']);
 
 
