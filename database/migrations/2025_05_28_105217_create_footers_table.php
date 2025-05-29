@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('footers', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('link')->unique();
+            $table->string('name')->nullable();
+            $table->string('link')->nullable();
             $table->string('icon')->nullable();
             $table->string('copy_right')->nullable();
             $table->timestamps();

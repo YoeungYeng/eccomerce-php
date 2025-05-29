@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Footer;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class FooterController extends Controller
@@ -48,7 +49,7 @@ class FooterController extends Controller
         try {
             // validate the request
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
+                'name' => 'required|string|max:255|unique:footers,name',
                 'link' => 'required|url',
                 'icon' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 'copy_right' => 'required|string|max:255',
@@ -98,6 +99,28 @@ class FooterController extends Controller
     public function show(string $id)
     {
         //
+        try {
+            // find the footer by id
+            $footer = Footer::find($id);
+            // check if footer exists
+            if (!$footer) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Footer not found',
+                ], 404);
+            }
+            // return success response
+            return response()->json([
+                'status' => 200,
+                'message' => 'Footer retrieved successfully',
+                'data' => $footer,
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -114,6 +137,69 @@ class FooterController extends Controller
     public function update(Request $request, string $id)
     {
         //
+        try {
+            // find the footer by id
+            $footer = Footer::find($id);
+            // check if footer exists
+            if (!$footer) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Footer not found',
+                ], 404);
+            }
+            // validate the request
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'link' => 'required|url',
+                'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'copy_right' => 'required|string|max:255',
+            ]);
+            // check if validation fails
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                ], 400);
+            }
+            // find the footer by id
+
+            // update the footer
+            $footer->name = $request->name;
+            $footer->link = $request->link;
+            $footer->copy_right = $request->copy_right;
+            // upload the icon if it exists
+
+            if ($request->hasFile('icon')) {
+                if ($footer->icon) {
+                    Storage::delete($footer->icon);
+                }
+                $image_path = $request->file('icon')->store('icons', 'public');
+                $image_url = asset('storage/' . $image_path); // Convert to URL
+                $footer->icon = $image_url;
+
+            }
+
+            if ($footer->isDirty()) {
+                $footer->save();
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Product updated successfully',
+                    'footer' => $footer
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'No changes detected',
+                    'product' => $footer
+                ], 200);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -122,5 +208,19 @@ class FooterController extends Controller
     public function destroy(string $id)
     {
         //
+        try {
+            $footer = Footer::findOrFail($id);
+            $footer->delete();
+            return response()->json([
+                'status' => 200,
+                'message' => 'Footer deleted successfully',
+                'data' => $footer,
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
