@@ -151,7 +151,7 @@ class FooterController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'link' => 'required|url',
-                'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'icon' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 'copy_right' => 'required|string|max:255',
             ]);
             // check if validation fails
